@@ -102,31 +102,41 @@
   .card .lbl{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.14em}
   .card .sub{font-size:14px;color:var(--cream);opacity:.7;margin-top:4px}
 
-  /* "gdzie" — one zoom-out stage; a vertical "flight altitude" rail switches levels */
+  /* "gdzie" — one zoom-out stage; a prominent tab bar switches Wrocław/Polska/Świat */
   .scene{margin-top:30px}
-  .altwrap{display:flex;gap:24px;align-items:flex-start}
-  .alt-rail{position:relative;flex-shrink:0;width:122px;height:264px;
-    display:flex;flex-direction:column;justify-content:space-between;padding:8px 0}
-  .alt-rail:focus-visible{outline:2px solid var(--a1);outline-offset:5px;border-radius:12px}
-  .alt-track{position:absolute;left:13px;top:22px;bottom:22px;width:3px;background:var(--line);border-radius:2px}
-  .alt-fill{position:absolute;left:13px;bottom:22px;width:3px;background:var(--grad);border-radius:2px;
-    height:0;transition:height .42s cubic-bezier(.2,.8,.2,1)}
-  .alt-stop{position:relative;z-index:2;display:flex;align-items:center;gap:11px;background:none;border:0;
-    cursor:pointer;padding:0;color:var(--muted);font-family:'Hanken Grotesk',sans-serif;
-    font-weight:600;font-size:14px;white-space:nowrap;touch-action:manipulation;transition:color .25s ease}
-  .alt-stop .dot{width:28px;height:28px;border-radius:50%;background:var(--ink2);border:2px solid var(--line);
-    flex-shrink:0;transition:all .3s ease}
-  .alt-stop .lab{display:flex;align-items:center;gap:7px}
-  .alt-stop .lab .e{font-size:16px;line-height:1}
-  .alt-stop.on{color:var(--cream)}
-  .alt-stop.on .dot{border-color:var(--a2);background:var(--ink);transform:scale(1.18);
-    box-shadow:0 0 16px rgba(255,94,91,.55)}
-  .alt-stop:focus-visible{outline:2px solid var(--a1);outline-offset:3px;border-radius:8px}
-  .alt-stage{flex:1;min-width:0}
-  .alt-hud{display:flex;align-items:baseline;gap:10px;margin-bottom:14px}
-  .alt-hud b{font-family:'Anton';font-size:30px;line-height:1;
+  .scene-bar{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;
+    flex-wrap:wrap;margin-bottom:20px}
+  .tabwrap{display:flex;flex-direction:column;gap:9px;min-width:0}
+  .scene-hint{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;
+    letter-spacing:.13em;text-transform:uppercase;color:var(--a1)}
+  .scene-hint .pts{font-size:14px}
+  /* the segmented control — each tab reads as a real button (bg+border), active = gradient */
+  .lvltabs{display:inline-flex;background:var(--ink);border:1px solid var(--line);
+    border-radius:999px;padding:5px;gap:5px;width:max-content;max-width:100%}
+  .lvltab{appearance:none;-webkit-appearance:none;cursor:pointer;border:1px solid var(--line);
+    background:rgba(255,255,255,.05);color:var(--cream);font-family:'Hanken Grotesk',sans-serif;
+    font-size:15px;font-weight:600;padding:11px 20px;border-radius:999px;display:flex;align-items:center;
+    gap:8px;white-space:nowrap;touch-action:manipulation;
+    transition:background .2s ease,color .2s ease,transform .12s ease,box-shadow .2s ease}
+  .lvltab .e{font-size:17px;line-height:1}
+  .lvltab:hover{background:rgba(255,255,255,.12)}
+  .lvltab:active{transform:scale(.95)}
+  .lvltab:focus-visible{outline:2px solid var(--a1);outline-offset:3px}
+  .lvltab.on{color:#1a0f0a;background:var(--grad);border-color:transparent;
+    box-shadow:0 6px 20px rgba(255,94,91,.4)}
+  .lvltab.on .e{filter:saturate(1.1)}
+  /* one-time pulse on reveal so it's obvious the bar is interactive */
+  @keyframes tabhint{0%,100%{box-shadow:0 0 0 0 rgba(255,176,55,0)}
+    50%{box-shadow:0 0 0 5px rgba(255,176,55,.22)}}
+  .scene.in .lvltabs{animation:tabhint 1.5s ease .3s 2}
+  .scope{display:flex;align-items:center;gap:11px;flex-shrink:0}
+  .bullseye{width:42px;height:42px;flex-shrink:0}
+  .bullseye .r{fill:none;stroke:var(--line);stroke-width:2.4;opacity:.5;transition:stroke .3s,opacity .3s}
+  .bullseye.l0 .r0,.bullseye.l1 .r1,.bullseye.l2 .r2{stroke:var(--a2);opacity:1}
+  .scope-stat{line-height:1.06;text-align:right}
+  .scope-stat b{font-family:'Anton';font-size:26px;display:block;
     background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
-  .alt-hud span{font-size:13px;color:var(--muted)}
+  .scope-stat span{font-size:12px;color:var(--muted)}
   /* the stage: one frame, levels cross-fade + scale (zoom feel), height animates */
   .stage2{position:relative;transition:height .42s cubic-bezier(.2,.8,.2,1)}
   .lvl{position:absolute;inset:0 0 auto 0;width:100%;opacity:0;visibility:hidden;transform:scale(1.05);
@@ -137,8 +147,7 @@
     padding:26px 28px;position:relative;overflow:hidden}
   .homecard::after{content:'';position:absolute;right:-50px;top:-50px;width:240px;height:240px;
     background:radial-gradient(circle,rgba(255,176,55,.16),transparent 70%);pointer-events:none}
-  .homecard .hbig{font-family:'Anton';font-size:clamp(26px,4.2vw,40px);line-height:1.04;max-width:18ch}
-  .homecard .hs{margin-top:14px;color:var(--cream);opacity:.84;font-size:15px;line-height:1.6;max-width:50ch}
+  .homecard .hbig{font-family:'Anton';font-size:clamp(28px,4.6vw,44px);line-height:1.05;max-width:20ch}
   /* level 2 — Poland pin map */
   .plmap{position:relative;max-width:560px;margin:0 auto}
   .plmap svg{width:100%;height:auto;display:block;overflow:visible}
@@ -153,14 +162,13 @@
   .plhome{filter:drop-shadow(0 0 9px rgba(255,176,55,.75))}
   /* level 3 — world chips */
   .countries{justify-content:flex-start}
-  @media(prefers-reduced-motion:reduce){.stage2,.lvl,.alt-fill,.alt-stop .dot{transition:none}}
+  @media(prefers-reduced-motion:reduce){.stage2,.lvl{transition:none}.scene.in .lvltabs{animation:none}}
   @media(max-width:560px){
-    .altwrap{gap:14px}
-    .alt-rail{width:104px;height:230px}
-    .alt-stop{font-size:13px;gap:8px}
-    .alt-stop .dot{width:24px;height:24px}
-    .alt-track,.alt-fill{left:11px}
-    .alt-hud b{font-size:26px}
+    .scene-bar{gap:14px}
+    .lvltabs{width:100%;justify-content:space-between}
+    .lvltab{flex:1;justify-content:center;padding:12px 6px;font-size:13px;gap:5px}
+    .lvltab .e{font-size:15px}
+    .scope{width:100%;justify-content:flex-start}
   }
 
   /* route-art map carousel */
@@ -366,25 +374,28 @@
     <p class="lead rv d1">Zacznij na własnej ulicy i odjeżdżaj kamerą — aż w kadrze zmieści się pół świata.</p>
 
     <div class="scene rv d1">
-      <div class="altwrap">
-        <div class="alt-rail" id="altRail" role="tablist" aria-label="Wysokość lotu — poziom mapy" tabindex="0">
-          <div class="alt-track"></div>
-          <div class="alt-fill" id="altFill"></div>
-          <button class="alt-stop" data-lvl="2" role="tab" aria-selected="false">
-            <span class="dot"></span><span class="lab"><span class="e">🌍</span>Świat</span></button>
-          <button class="alt-stop" data-lvl="1" role="tab" aria-selected="false">
-            <span class="dot"></span><span class="lab"><span class="e">🇵🇱</span>Polska</span></button>
-          <button class="alt-stop on" data-lvl="0" role="tab" aria-selected="true">
-            <span class="dot"></span><span class="lab"><span class="e">🏠</span>Wrocław</span></button>
-        </div>
-        <div class="alt-stage">
-          <div class="alt-hud"><b id="sceneStat">—</b><span id="sceneSub"></span></div>
-          <div class="stage2" id="sceneStage">
-            <div class="lvl on" data-lvl="0" role="tabpanel"><div class="homecard" id="homeCard"></div></div>
-            <div class="lvl" data-lvl="1" role="tabpanel"><div class="plmap" id="plMap"></div></div>
-            <div class="lvl" data-lvl="2" role="tabpanel"><div class="countries" id="countries"></div></div>
+      <div class="scene-bar">
+        <div class="tabwrap">
+          <span class="scene-hint"><span class="pts">↔</span> oddalaj kamerę</span>
+          <div class="lvltabs" role="tablist" aria-label="Poziom mapy — skala widoku" tabindex="0">
+            <button class="lvltab on" data-lvl="0" role="tab" aria-selected="true"><span class="e">🏠</span>Wrocław</button>
+            <button class="lvltab" data-lvl="1" role="tab" aria-selected="false"><span class="e">🇵🇱</span>Polska</button>
+            <button class="lvltab" data-lvl="2" role="tab" aria-selected="false"><span class="e">🌍</span>Świat</button>
           </div>
         </div>
+        <div class="scope">
+          <svg class="bullseye l0" viewBox="0 0 44 44" aria-hidden="true">
+            <circle class="r r2" cx="22" cy="22" r="20"/>
+            <circle class="r r1" cx="22" cy="22" r="13"/>
+            <circle class="r r0" cx="22" cy="22" r="6"/>
+          </svg>
+          <div class="scope-stat"><b id="sceneStat">—</b><span id="sceneSub"></span></div>
+        </div>
+      </div>
+      <div class="stage2" id="sceneStage">
+        <div class="lvl on" data-lvl="0" role="tabpanel"><div class="homecard" id="homeCard"></div></div>
+        <div class="lvl" data-lvl="1" role="tabpanel"><div class="plmap" id="plMap"></div></div>
+        <div class="lvl" data-lvl="2" role="tabpanel"><div class="countries" id="countries"></div></div>
       </div>
     </div>
 
@@ -600,9 +611,7 @@ heroObs.observe($('.hero'));
   const total=DATA.lifetime.runs;
   // LEVEL 0 — Wrocław home card (the big number lives in the scene HUD)
   const hc=$('#homeCard');
-  if(hc) hc.innerHTML=`<div class="hbig">Tu zaczyna się <b>${Math.round(P.home.count/total*100)}%</b> Twoich biegów.</div>
-    <div class="hs">Wrocław — z dzielnicą <b>Księże</b> włącznie, bo to jedno miasto, nie dwa.
-      Dom, codzienne pętle, większość kilometrów: wszystko rusza stąd.</div>`;
+  if(hc) hc.innerHTML=`<div class="hbig">Tu zaczyna się <b>${Math.round(P.home.count/total*100)}%</b> Twoich biegów.</div>`;
   // STEP 2 — Poland map with runner pins
   const map=$('#plMap');
   if(map){
@@ -879,10 +888,9 @@ simpleBars('#distBars',DATA.dist_hist,d=>d.runs,d=>d.label,
   const stage=$('#sceneStage'); if(!stage)return;
   const P=DATA.poland, total=DATA.lifetime.runs;
   const foreign=((DATA.scale&&DATA.scale.countries)||[]).filter(c=>c.name!=='Polska');
-  const stops=[...document.querySelectorAll('.alt-stop')];
-  const byLvl=l=>stops.find(s=>+s.dataset.lvl===l);
+  const tabs=[...document.querySelectorAll('.lvltab')];
   const lvls=[...stage.querySelectorAll('.lvl')];
-  const rail=$('#altRail'), fill=$('#altFill');
+  const bull=document.querySelector('.bullseye');
   const statEl=$('#sceneStat'), subEl=$('#sceneSub');
   const HEAD=[
     {n:P.home.count, s:'biegów z domu'},
@@ -891,25 +899,22 @@ simpleBars('#distBars',DATA.dist_hist,d=>d.runs,d=>d.label,
   ];
   let cur=-1;
   const setH=()=>{const on=lvls[cur]; if(on)stage.style.height=on.offsetHeight+'px';};
-  const setFill=()=>{const dot=byLvl(cur).querySelector('.dot');
-    const rr=rail.getBoundingClientRect(), dr=dot.getBoundingClientRect();
-    const cy=(dr.top+dr.height/2)-rr.top;             // active dot centre, relative to the rail
-    fill.style.height=Math.max(0,(rr.height-22)-cy)+'px';};  // fill from the ground up to it
   function go(i){
     i=Math.max(0,Math.min(2,i)); if(i===cur)return; cur=i;
-    stops.forEach(s=>{const on=+s.dataset.lvl===i;s.classList.toggle('on',on);s.setAttribute('aria-selected',on);});
+    tabs.forEach(t=>{const on=+t.dataset.lvl===i;t.classList.toggle('on',on);t.setAttribute('aria-selected',on);});
     lvls.forEach((l,j)=>l.classList.toggle('on',j===i));
+    bull.setAttribute('class','bullseye l'+i);  // SVG className is read-only
     statEl.textContent=HEAD[i].n; subEl.textContent=HEAD[i].s;
-    requestAnimationFrame(()=>{setFill();setH();});
+    requestAnimationFrame(setH);
   }
-  stops.forEach(s=>s.onclick=()=>go(+s.dataset.lvl));
-  rail.addEventListener('keydown',e=>{        // up = ascend (zoom out), down = descend
-    if(e.key==='ArrowUp'){e.preventDefault();go(cur+1);}
-    else if(e.key==='ArrowDown'){e.preventDefault();go(cur-1);}
+  tabs.forEach(t=>t.onclick=()=>go(+t.dataset.lvl));
+  document.querySelector('.lvltabs').addEventListener('keydown',e=>{
+    if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+    else if(e.key==='ArrowRight'){e.preventDefault();go(cur+1);}
   });
-  let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{setFill();setH();},160);});
+  let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(setH,160);});
   go(0);
-  setTimeout(()=>{setFill();setH();},300); setTimeout(()=>{setFill();setH();},900);
+  setTimeout(setH,300); setTimeout(setH,900);
   window.__scene={go};
 })();
 
