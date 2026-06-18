@@ -141,17 +141,12 @@
   .pl-outline{fill:rgba(255,255,255,.045);stroke:rgba(245,239,230,.5);stroke-width:2.2;stroke-linejoin:round}
   .pin .halo{fill:rgba(255,94,91,.16)}
   .pin .emo{dominant-baseline:central;text-anchor:middle}
-  .pin .badge{fill:var(--ink);stroke:var(--a1);stroke-width:2}
-  .pin .bnum{font-family:'Anton';fill:var(--cream);text-anchor:middle;dominant-baseline:central}
-  .pl-home .star{filter:drop-shadow(0 0 9px rgba(255,176,55,.75))}
-  .pl-home .hlabel{font-family:'Anton';fill:var(--cream);text-anchor:middle;
-    paint-order:stroke;stroke:var(--ink);stroke-width:4}
-  .pllegend{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-  .pllegend .lg{display:flex;align-items:center;gap:9px;background:var(--ink2);border:1px solid var(--line);
-    border-radius:13px;padding:9px 13px}
-  .pllegend .lg .e{font-size:18px}
-  .pllegend .lg .t{font-weight:600;font-size:14px}
-  .pllegend .lg .c{font-family:'Anton';color:var(--a1);font-size:14px}
+  .pin .leader{stroke:rgba(245,239,230,.32);stroke-width:1.2}
+  .pin .plbl{dominant-baseline:central;paint-order:stroke;stroke:var(--ink);stroke-width:4.5;
+    stroke-linejoin:round}
+  .pin .ln{font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:26px;fill:var(--cream)}
+  .pin .lc{font-family:'Anton';font-size:26px;fill:var(--a1)}
+  .plhome{filter:drop-shadow(0 0 9px rgba(255,176,55,.75))}
   /* level 3 — world chips */
   .countries{justify-content:flex-start}
   @media(prefers-reduced-motion:reduce){.stage2,.lvl{transition:none}}
@@ -384,7 +379,6 @@
         <div class="lvl on" data-lvl="0" role="tabpanel"><div class="homecard" id="homeCard"></div></div>
         <div class="lvl" data-lvl="1" role="tabpanel">
           <div class="plmap" id="plMap"></div>
-          <div class="pllegend" id="plLegend"></div>
         </div>
         <div class="lvl" data-lvl="2" role="tabpanel"><div class="countries" id="countries"></div></div>
       </div>
@@ -622,25 +616,28 @@ heroObs.observe($('.hero'));
       pl[i].fx=Math.max(38,Math.min(W-38,pl[i].fx));
       pl[i].fy=Math.max(48,Math.min(H-34,pl[i].fy));
     }
-    const sz=c=>26+Math.min(1,(c-3)/22)*16;  // emoji size 26..42 by run count
-    const pins=pl.map(p=>{const r=sz(p.count);return `<g class="pin">
-      <circle class="halo" cx="${p.fx}" cy="${p.fy}" r="${(r*0.92).toFixed(1)}"/>
+    const sz=c=>24+Math.min(1,(c-3)/22)*13;  // emoji size 24..37 by run count
+    // names sit to the RIGHT of each pin (room in the empty east); spread them
+    // vertically so labels never overlap, with a thin leader back to the pin.
+    const LH=38;  // include a slot at home's y so no place label lands on the 🏠
+    const slots=pl.map(p=>({p,y:p.fy})).concat([{y:home.y}]).sort((a,b)=>a.y-b.y);
+    slots.forEach((s,i)=>{s.ly=i?Math.max(s.y,slots[i-1].ly+LH):s.y; if(s.p)s.p.ly=s.ly;});
+    const pins=pl.map(p=>{const r=sz(p.count),lx=p.fx+r*0.68+10;
+      return `<g class="pin">
+      <circle class="halo" cx="${p.fx}" cy="${p.fy}" r="${(r*0.9).toFixed(1)}"/>
+      <line class="leader" x1="${(p.fx+r*0.45).toFixed(1)}" y1="${p.fy}" x2="${(lx-5).toFixed(1)}" y2="${p.ly.toFixed(1)}"/>
       <text class="emo" x="${p.fx}" y="${p.fy}" style="font-size:${r.toFixed(1)}px">🏃</text>
-      <circle class="badge" cx="${(p.fx+r*0.7).toFixed(1)}" cy="${(p.fy+r*0.6).toFixed(1)}" r="13"/>
-      <text class="bnum" x="${(p.fx+r*0.7).toFixed(1)}" y="${(p.fy+r*0.6).toFixed(1)}" style="font-size:18px">${p.count}</text>
+      <text class="plbl" x="${lx.toFixed(1)}" y="${p.ly.toFixed(1)}"><tspan class="ln">${p.names.join(' · ')}</tspan><tspan class="lc" dx="9">${p.count}</tspan></text>
     </g>`;}).join('');
     const homeMark=`<g class="pl-home">
-      <text class="hlabel" x="${home.x}" y="${(home.y-30).toFixed(1)}" style="font-size:23px">Wrocław</text>
-      <text class="star" x="${home.x}" y="${home.y}" style="font-size:30px;text-anchor:middle;dominant-baseline:central">🏠</text>
-    </g>`;
+      <circle cx="${home.x}" cy="${home.y}" r="22" fill="var(--ink)" opacity="0.92"/>
+      <text class="plhome" x="${home.x}" y="${home.y}"
+        style="font-size:30px;text-anchor:middle;dominant-baseline:central">🏠</text></g>`;
+    // home drawn LAST so it never hides behind a place label
     map.innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img"
-        aria-label="Mapa Polski z miejscami biegów poza Wrocławiem">
-      <path class="pl-outline" d="${P.outline}"/>${homeMark}${pins}</svg>`;
+        aria-label="Mapa Polski: miejsca biegów poza Wrocławiem, podpisane nazwami">
+      <path class="pl-outline" d="${P.outline}"/>${pins}${homeMark}</svg>`;
   }
-  // STEP 2 — legend (authoritative names + counts)
-  const lg=$('#plLegend');
-  if(lg) lg.innerHTML=P.places.map(p=>`<div class="lg"><span class="e">🏃</span>
-    <span class="t">${p.names.join(' · ')}</span><span class="c">${p.count}</span></div>`).join('');
 })();
 
 /* ---------- screenshot mode (only with ?shot) — instant, no scroll ---------- */
