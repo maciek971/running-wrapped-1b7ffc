@@ -106,15 +106,15 @@
   .scene{margin-top:30px}
   .scene-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;
     margin-bottom:18px;flex-wrap:wrap}
-  .seg{display:inline-flex;background:var(--ink2);border:1px solid var(--line);
+  .lvltabs{display:inline-flex;background:var(--ink2);border:1px solid var(--line);
     border-radius:999px;padding:4px;gap:2px}
-  .seg-b{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:var(--muted);
+  .lvltab{appearance:none;-webkit-appearance:none;border:0;background:transparent;color:var(--muted);
     cursor:pointer;font-family:'Hanken Grotesk',sans-serif;font-size:14px;font-weight:600;
     padding:9px 17px;border-radius:999px;display:flex;align-items:center;gap:7px;
     white-space:nowrap;touch-action:manipulation;transition:color .25s ease,background .25s ease}
-  .seg-b .e{font-size:15px;line-height:1}
-  .seg-b.on{color:#1a0f0a;background:var(--grad)}
-  .seg-b:focus-visible{outline:2px solid var(--a1);outline-offset:2px}
+  .lvltab .e{font-size:15px;line-height:1}
+  .lvltab.on{color:#1a0f0a;background:var(--grad)}
+  .lvltab:focus-visible{outline:2px solid var(--a1);outline-offset:2px}
   .scope{display:flex;align-items:center;gap:11px}
   .bullseye{width:44px;height:44px;flex-shrink:0}
   .bullseye .r{fill:none;stroke:var(--line);stroke-width:2.4;opacity:.5;transition:stroke .3s,opacity .3s}
@@ -157,8 +157,8 @@
   @media(prefers-reduced-motion:reduce){.stage2,.lvl{transition:none}}
   @media(max-width:560px){
     .scene-bar{gap:12px}
-    .seg{width:100%}
-    .seg-b{flex:1;justify-content:center;padding:11px 6px;font-size:13px;gap:5px}
+    .lvltabs{width:100%}
+    .lvltab{flex:1;justify-content:center;padding:11px 6px;font-size:13px;gap:5px}
     .scope{width:100%}
   }
 
@@ -366,10 +366,10 @@
 
     <div class="scene rv d1">
       <div class="scene-bar">
-        <div class="seg" role="tablist" aria-label="Poziom mapy" tabindex="0">
-          <button class="seg-b on" data-lvl="0" role="tab" aria-selected="true"><span class="e">🏠</span>Wrocław</button>
-          <button class="seg-b" data-lvl="1" role="tab" aria-selected="false"><span class="e">🇵🇱</span>Polska</button>
-          <button class="seg-b" data-lvl="2" role="tab" aria-selected="false"><span class="e">🌍</span>Świat</button>
+        <div class="lvltabs" role="tablist" aria-label="Poziom mapy" tabindex="0">
+          <button class="lvltab on" data-lvl="0" role="tab" aria-selected="true"><span class="e">🏠</span>Wrocław</button>
+          <button class="lvltab" data-lvl="1" role="tab" aria-selected="false"><span class="e">🇵🇱</span>Polska</button>
+          <button class="lvltab" data-lvl="2" role="tab" aria-selected="false"><span class="e">🌍</span>Świat</button>
         </div>
         <div class="scope">
           <svg class="bullseye l0" viewBox="0 0 44 44" aria-hidden="true">
@@ -878,7 +878,7 @@ simpleBars('#distBars',DATA.dist_hist,d=>d.runs,d=>d.label,
   const stage=$('#sceneStage'); if(!stage)return;
   const P=DATA.poland, total=DATA.lifetime.runs;
   const foreign=((DATA.scale&&DATA.scale.countries)||[]).filter(c=>c.name!=='Polska');
-  const segs=[...document.querySelectorAll('.seg-b')];
+  const segs=[...document.querySelectorAll('.lvltab')];
   const lvls=[...stage.querySelectorAll('.lvl')];
   const bull=document.querySelector('.bullseye');
   const statEl=$('#sceneStat'), subEl=$('#sceneSub');
@@ -898,7 +898,7 @@ simpleBars('#distBars',DATA.dist_hist,d=>d.runs,d=>d.label,
     requestAnimationFrame(setH);
   }
   segs.forEach((b,i)=>b.onclick=()=>go(i));
-  document.querySelector('.seg').addEventListener('keydown',e=>{
+  document.querySelector('.lvltabs').addEventListener('keydown',e=>{
     if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
     else if(e.key==='ArrowRight'){e.preventDefault();go(cur+1);}
   });
