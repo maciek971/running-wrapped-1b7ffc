@@ -325,11 +325,11 @@
   <section id="climb" style="order:1">
     <div class="kicker rv">Rozdział 1 — wspinaczka</div>
     <h2 class="rv">Rok po roku,<br>kilometr po kilometrze</h2>
-    <p class="lead rv d1">Zaczęło się w <b>2014</b> od 217 km. Dwanaście lat później rok <b>2026</b> ma już
-      <b>856 km</b> — i to dopiero koniec czerwca. Pomiędzy: lata słabsze i mocniejsze, ale trend jest jeden.</p>
+    <p class="lead rv d1">Zaczęło się w <b>2014</b> od <span data-km="2014">217</span> km. Dwanaście lat później rok <b>2026</b> ma już
+      <b><span data-km="2026">856</span> km</b> — i to dopiero <span id="c-when">koniec czerwca</span>. Pomiędzy: lata słabsze i mocniejsze, ale trend jest jeden.</p>
     <div class="chart bar-row" id="yearBars"></div>
     <div class="edu rv">📈 <b>Konsekwencja się kumuluje.</b> Nie chodzi o jeden genialny tydzień — sumę robią
-      lata powtarzalności. Skok 2024→2026 (390 → 704 → 856 km) to efekt regularności, nie cudu.</div>
+      lata powtarzalności. Skok 2024→2026 (<span data-km="2024">390</span> → <span data-km="2025">704</span> → <span data-km="2026">856</span> km) to efekt regularności, nie cudu.</div>
   </section>
 
   <!-- MONTHLY AREA -->
@@ -350,7 +350,7 @@
     <h2 class="rv">Nauka biegania<br>na luzie</h2>
     <p class="lead rv d1">Rozkład czasu w strefach tętna, rok po roku (od 2018, odkąd jest HR).
       Przez lata dominowała <b>Z4 — mocno</b>. W <b>2026</b> wszystko się przewraca:
-      <b>56% czasu w Z1+Z2</b>, czyli spokojnie.</p>
+      <b><span id="z-easy">56</span>% czasu w Z1+Z2</b>, czyli spokojnie.</p>
     <div class="chart stack-row" id="zoneStack"></div>
     <div class="stack-lbl" id="zoneYears"></div>
     <div class="legend" id="zoneLegend"></div>
@@ -364,7 +364,7 @@
     <div class="kicker rv">Rozdział 8 — tempo kontra wolumen</div>
     <h2 class="rv">Szybciej nie znaczy więcej</h2>
     <p class="lead rv d1">Linia to średnie tempo w danym roku, słupki w tle — wolumen.
-      Najszybszy byłeś w <b>2017 (5:45/km)</b> przy 238 km. Dziś biegasz <b>3× więcej</b>,
+      Najszybszy byłeś w <b>2017 (5:45/km)</b> przy <span data-km="2017">238</span> km. Dziś biegasz <b><span id="p-mult">3</span>× więcej</b>,
       wolniej średnio — bo większość to spokojne kilometry.</p>
     <div class="area-wrap rv"><svg id="paceChart" viewBox="0 0 1000 300"></svg></div>
     <div class="edu rv">🐢 <b>Wolne kilometry to nie strata.</b> Średnie tempo spada, gdy świadomie
@@ -484,7 +484,7 @@
   <section class="outro" style="order:11">
     <div class="kicker rv">…i to dopiero czerwiec</div>
     <h2 class="rv">Rok 2026 jest już<br>największy w historii.</h2>
-    <p class="lead rv d1">856 km w pół roku, najdłuższy bieg w życiu (22 km), najspokojniejsze tętno
+    <p class="lead rv d1"><span data-km="2026">856</span> km w pół roku, najdłuższy bieg w życiu (<span id="o-longest">22</span> km), najspokojniejsze tętno
       i najwięcej łatwych kilometrów. Reszta sezonu dopiero przed Tobą. 🏃</p>
   </section>
 
@@ -920,6 +920,22 @@ simpleBars('#distBars',DATA.dist_hist,d=>d.runs,d=>d.label,
   go(0);
   setTimeout(setH,300); setTimeout(setH,900);
   window.__scene={go};
+})();
+
+/* ---------- dynamic copy — keeps inline prose numbers in sync with the data
+   so a data refresh never leaves stale figures in the text ---------- */
+(function(){
+  const ky=y=>{const r=DATA.years.find(x=>x.year===y);return r?Math.round(r.km):0;};
+  document.querySelectorAll('[data-km]').forEach(el=>{el.textContent=ky(+el.dataset.km);});
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const MON=['stycznia','lutego','marca','kwietnia','maja','czerwca','lipca','sierpnia',
+    'września','października','listopada','grudnia'];
+  const p=(DATA.lifetime.last||'').split('-').map(Number), mm=p[1], dd=p[2];
+  if(mm) set('c-when',(dd<=10?'początek':dd<=20?'połowa':'koniec')+' '+MON[mm-1]);
+  const z=(DATA.zones_by_year||[]).find(x=>x.year===2026);
+  if(z&&z.pct) set('z-easy',(z.pct.Z1||0)+(z.pct.Z2||0));
+  if(ky(2017)) set('p-mult',Math.floor(ky(2026)/ky(2017)));
+  const lg=DATA.records&&DATA.records.longest; if(lg) set('o-longest',Math.round(lg.km));
 })();
 
 _shotMode();
