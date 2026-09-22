@@ -534,7 +534,7 @@
   <section id="when" style="order:6">
     <div class="kicker rv">Rozdział 6 — 5:00 rano</div>
     <h2 class="rv">Kiedy biegasz</h2>
-    <p class="lead rv d1"><b><span id="am-pct">–</span>% Twoich biegów</b> startuje między 4 a 8 rano, ze szczytem punktualnie o <b><span id="am-peak">–</span></b>. Kiedy większość świata przewraca się na drugi bok, Ty masz już przebiegnięte. Jest jeden wyjątek i to nie przypadek, że akurat ten: półmaraton wystartował o 22:27.</p>
+    <p class="lead rv d1"><b><span id="am-pct">–</span>% Twoich biegów</b> startuje między 4 a 8 rano, ze szczytem punktualnie o <b><span id="am-peak">–</span></b>. Kiedy większość świata przewraca się na drugi bok, Ty masz już przebiegnięte.<span id="am-exc"></span></p>
     <div class="two">
       <div class="rv d1"><div class="subh">Pora startu (radar 24h — długość promienia to liczba biegów)</div>
         <div class="hourchart" id="hourChart"></div></div>
@@ -847,6 +847,28 @@ const EVENTS = [{
   watch:    { time: '1:58:02', gps_km: 21.36, avg_hr: 168, max_hr: 183, ascent_m: 214 },
   official: { chip_time: '1:57:58', wma: '1:56:38' }
 }];
+
+/* Cele dystansu dla rozdziału 9. Odległości to ortodroma z Wrocławia — stałe
+   geograficzne, więc literał jest tu uczciwy (jak czas z chipa w EVENTS);
+   wszystko pochodne liczy kod. Każde miasto ma znany maraton: Berlin, Londyn,
+   Boston, Nowy Jork, Tokio i Sydney to World Marathon Majors, Ateny to miejsce,
+   od którego wziął się dystans. Lista celowo sięga dalej niż dzisiejsza suma —
+   poprzednia (stolice Europy z silnika) wyczerpała się i nagłówek zaczął kłamać. */
+/* `gen` to dopełniacz („% drogi do Bostonu"). Polskiej odmiany nazw miast nie da
+   się wygenerować regułą — Tokio i Sydney są nieodmienne, „Nowy Jork" odmienia oba
+   człony — więc trzymamy gotową formę w danych, jak `city_in` w EVENTS. */
+const TRIPS = [
+  {city:'Berlin',    km:295,   gen:'Berlina'},
+  {city:'Paryż',     km:1077,  gen:'Paryża'},
+  {city:'Londyn',    km:1191,  gen:'Londynu'},
+  {city:'Ateny',     km:1552,  gen:'Aten'},
+  {city:'Lizbona',   km:2458,  gen:'Lizbony'},
+  {city:'Reykjavik', km:2670,  gen:'Reykjaviku'},
+  {city:'Boston',    km:6374,  gen:'Bostonu'},
+  {city:'Nowy Jork', km:6679,  gen:'Nowego Jorku'},
+  {city:'Tokio',     km:8861,  gen:'Tokio'},
+  {city:'Sydney',    km:15884, gen:'Sydney'},
+];
 
 /* --EV-PURE-START-- */
 /* Czyste funkcje rozdziału 10 — bez DOM i bez globali spoza tego bloku, żeby
@@ -1182,11 +1204,22 @@ function tabGroup(root, attr, show){
     <div class="huge">${fmt(s.ascent_m)} m</div>
     <div class="cmp">⛰️ ${climbed?`wyżej niż <b>${climbed.name}</b> (${fmt(climbed.h)} m)`:''}${next?` — ${Math.round(next.x*100)}% drogi na ${next.name}`:''}</div>
     <div class="rows">${s.peaks.map(p=>`<div class="r"><span>${p.name} · ${fmt(p.h)} m</span><b>×${dec(p.x)}</b></div>`).join('')}</div>`;
-  const c=s.distance.closest, home=(DATA.geo&&DATA.geo.home_city)||'dom';
+  const home=(DATA.geo&&DATA.geo.home_city)||'dom';
+  // Cele biorą się z TRIPS (szablon), nie z silnika. Nagłówek przejmuje wzorzec
+  // karty podbiegów obok: najdalszy cel już minięty + postęp do następnego.
+  // Dawne „to prawie tyle, co X" kłamało, odkąd suma przekroczyła całą listę.
+  const trips=(typeof TRIPS!=='undefined'?[...TRIPS]:[]).sort((a,b)=>a.km-b.km);
+  // uwaga: `next` jest już zajęte w tym IIFE przez kartę podbiegów
+  const passedTrip=trips.filter(t=>t.km<=L.km).pop();
+  const nextTrip=trips.find(t=>t.km>L.km);
+  const cmp=[
+    passedTrip?`dalej niż <b>${home} → ${passedTrip.city}</b> (${fmt(passedTrip.km)} km)`:'',
+    nextTrip?`${Math.round(L.km/nextTrip.km*100)}% drogi do ${nextTrip.gen||nextTrip.city}`:''
+  ].filter(Boolean).join(' — ');
   $('#scaleDist').innerHTML=`<div class="lbl">Suma dystansu</div>
     <div class="huge">${fmt(L.km)} km</div>
-    <div class="cmp">🧭 to prawie tyle, co <b>${home} → ${c.city}</b> (${fmt(c.km)} km)</div>
-    <div class="rows">${s.distance.cities.map(x=>`<div class="r"><span>${home} → ${x.city} · ${fmt(x.km)} km</span><b>×${dec(+(L.km/x.km).toFixed(1))}</b></div>`).join('')}</div>`;
+    ${cmp?`<div class="cmp">🧭 ${cmp}</div>`:''}
+    <div class="rows">${trips.map(x=>`<div class="r"><span>${home} → ${x.city} · ${fmt(x.km)} km</span><b>×${dec(+(L.km/x.km).toFixed(1))}</b></div>`).join('')}</div>`;
 })();
 
 /* ---------- countries highlight ---------- */
@@ -1277,6 +1310,15 @@ function tabGroup(root, attr, show){
     document.title='Running Wrapped · '+nY+' '+evPlForm(nY,'rok','lata','lat')
       +', '+Math.round(LT.km)+' km'
       +(nH?', '+(W[nH]||nH).toLowerCase()+' '+evPlForm(nH,'półmaraton','półmaratony','półmaratonów'):'');
+  }
+  // rozdz. 6 — wyjątkiem od porannego rytmu są starty: godzinę wybiera organizator,
+  // nie Maciej. Godziny idą z EVENTS, więc trzeci start dopisze się sam, a przy
+  // pustej tablicy całe zdanie znika, zamiast twierdzić, że wyjątek jest jeden.
+  if(typeof EVENTS!=='undefined' && EVENTS.length){
+    const ts=[...EVENTS].sort((a,b)=>a.date<b.date?-1:1).map(e=>e.start_local);
+    const list=ts.length>1?ts.slice(0,-1).join(', ')+' i '+ts[ts.length-1]:ts[0];
+    set('am-exc',' Wyjątki nie są przypadkowe: to dni, w których o godzinie decyduje '
+      +'organizator, a nie Ty — '+(ts.length>1?'starty':'start')+' o '+list+'.');
   }
   const first6=yrs.slice(0,6).reduce((s,x)=>s+(x.km||0),0);
   if(first6) set('c-hist6',Math.round(first6));
